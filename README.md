@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quiz Optimization System
+
+A full-stack web application that suggests the optimal set of quiz questions a user can answer within a time limit to maximize their total score, using a Dynamic Programming algorithm.
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React, TypeScript
+- **Backend**: Next.js API Routes
+- **Database**: Supabase (PostgreSQL)
+- **Algorithm**: 0/1 Knapsack Dynamic Programming
+
+## How It Works
+
+Each question has a `score` and `time_required`. Given a quiz's `total_time` limit, the application uses the **0/1 Knapsack algorithm** to compute the optimal subset of questions that maximizes the total score without exceeding the time limit.
+
+## Database Schema
+
+- `users` — stores user information
+- `quizzes` — stores quiz metadata (title, description, total_time)
+- `questions` — stores question text, score, and time_required
+- `answers` — stores user responses linked to questions and quizzes
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- Supabase account
 
+### Setup
+
+1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/saipradeeptlk-a11y/quiz-optimizer.git
+cd quiz-optimizer
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Create `.env.local` file in the root:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the development server
+```bash
+npm run dev
+```
 
-## Learn More
+5. Open [http://localhost:3000](http://localhost:3000)
 
-To learn more about Next.js, take a look at the following resources:
+## API Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### GET `/api/quizzes`
+Returns all available quizzes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "title": "JavaScript Basics",
+    "description": "Test your JS fundamentals",
+    "total_time": 60
+  }
+]
+```
 
-## Deploy on Vercel
+### GET `/api/quizzes/[id]/questions`
+Returns all questions for a specific quiz.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "text": "What is a closure?",
+    "score": 20,
+    "time_required": 15
+  }
+]
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### POST `/api/answers`
+Submits user answers for a quiz.
+
+**Request Body:**
+```json
+{
+  "user_id": "user-001",
+  "quiz_id": "uuid",
+  "answers": [
+    { "question_id": "uuid", "selected_answer": "A closure is..." }
+  ]
+}
+```
+
+### POST `/api/optimize`
+Runs the 0/1 Knapsack algorithm and returns the optimal question set.
+
+**Request Body:**
+```json
+{
+  "quiz_id": "uuid"
+}
+```
+
+**Response:**
+```json
+{
+  "questions": [...],
+  "totalScore": 75,
+  "timeUsed": 60
+}
+```
+
+## Algorithm
+
+The optimization uses the **0/1 Knapsack Dynamic Programming** approach:
+
+- Each question = an item with `weight (time_required)` and `value (score)`
+- Quiz `total_time` = knapsack capacity
+- DP table size = `O(n × total_time)`
+- Time complexity: `O(n × total_time)`
+- Space complexity: `O(total_time)`
+
+The algorithm finds the subset of questions that **maximizes total score** without exceeding the time limit.
